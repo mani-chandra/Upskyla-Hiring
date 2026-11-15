@@ -1,0 +1,645 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum CourseCategory {
+  IT
+  NON_IT
+  COMBINED
+}
+
+enum JobCategory {
+  IT
+  NON_IT
+}
+
+enum EnrollmentStatus {
+  PENDING_PAYMENT
+  ACTIVE
+  CANCELLED
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+}
+
+enum PaymentProvider {
+  RAZORPAY
+  DEMO
+}
+
+enum Proficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum LanguageProficiency {
+  BASIC
+  CONVERSATIONAL
+  PROFESSIONAL
+  FLUENT
+}
+
+enum SoftSkillLevel {
+  BASIC
+  WORKING
+  STRONG
+  EXPERT
+}
+
+enum QuestionType {
+  MCQ
+  MULTI_SELECT
+  PROGRAMMING_OUTPUT
+  CODING
+  SCENARIO
+  COMMUNICATION
+}
+
+enum ApplicationStatus {
+  APPLIED
+  UNDER_REVIEW
+  MOCK_INTERVIEW_SCHEDULED
+  MOCK_INTERVIEW_COMPLETED
+  SHORTLISTED
+  FORWARDED_TO_COMPANY
+  COMPANY_INTERVIEW_SCHEDULED
+  COMPANY_INTERVIEW_COMPLETED
+  SELECTED
+  REJECTED
+  ON_HOLD
+  WITHDRAWN
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum PartnershipStatus {
+  PROSPECT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum InterviewType {
+  MOCK
+  COMPANY
+}
+
+enum InterviewStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum HiringOutcomeType {
+  SELECTED
+  REJECTED
+  JOINED
+  DECLINED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  phone         String?   @unique
+  passwordHash  String
+  name          String
+  role          Role      @default(STUDENT)
+  emailVerified DateTime?
+  phoneVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  profile                StudentProfile?
+  education              Education?
+  resumes                StudentResume[]
+  files                  StoredFile[]
+  enrollments            Enrollment[]
+  skills                 StudentSkill[]
+  languages              StudentLanguage[]
+  attempts               AssessmentAttempt[]
+  verifiedSkills         VerifiedSkill[]
+  applications           Application[]
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
+  auditLogs              AdminAuditLog[]
+  interviewsAssigned     Interview[]                  @relation("Interviewer")
+  statusChanges          ApplicationStatusHistory[]   @relation("StatusActor")
+  submissionsForwarded   CandidateSubmission[]        @relation("ForwardedBy")
+  outcomesRecorded       HiringOutcome[]              @relation("OutcomeRecorder")
+
+  @@index([role])
+}
+
+model StudentProfile {
+  id                     String          @id @default(uuid())
+  userId                 String          @unique
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateOfBirth            DateTime?
+  address                String?
+  currentLocation        String?
+  photoFileId            String?
+  photoFile              StoredFile?     @relation("ProfilePhoto", fields: [photoFileId], references: [id])
+  communicationSkill     SoftSkillLevel?
+  teamworkSkill          SoftSkillLevel?
+  problemSolvingSkill    SoftSkillLevel?
+  customerHandlingSkill  SoftSkillLevel?
+  onboardingStep         String          @default("course")
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+}
+
+model Education {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  college         String
+  degree          String
+  branch          String
+  graduationYear  Int
+  academicDetails String?
+  updatedAt       DateTime @updatedAt
+}
+
+model StoredFile {
+  id         String          @id @default(uuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind       String
+  fileName   String
+  mimeType   String
+  sizeBytes  Int
+  data       Bytes?
+  storageKey String?
+  createdAt  DateTime        @default(now())
+  resume     StudentResume?
+  profiles   StudentProfile[] @relation("ProfilePhoto")
+
+  @@index([userId, kind])
+}
+
+model StudentResume {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileId    String     @unique
+  file      StoredFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  isCurrent Boolean    @default(true)
+  createdAt DateTime   @default(now())
+
+  @@index([userId, isCurrent])
+}
+
+model Course {
+  id          String         @id @default(uuid())
+  slug        String         @unique
+  name        String
+  category    CourseCategory
+  summary     String
+  description String
+  active      Boolean        @default(true)
+  pricing     CoursePricing[]
+  enrollments Enrollment[]
+  createdAt   DateTime       @default(now())
+}
+
+model CoursePricing {
+  id            String   @id @default(uuid())
+  courseId      String
+  course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  originalPrice Int
+  offerPrice    Int
+  label         String   @default("New Batch Offer")
+  active        Boolean  @default(true)
+  effectiveFrom DateTime @default(now())
+
+  @@index([courseId, active])
+}
+
+model Enrollment {
+  id          String           @id @default(uuid())
+  userId      String
+  courseId    String
+  status      EnrollmentStatus @default(PENDING_PAYMENT)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course           @relation(fields: [courseId], references: [id])
+  payments    Payment[]
+  createdAt   DateTime         @default(now())
+  activatedAt DateTime?
+
+  @@unique([userId, courseId])
+  @@index([status])
+  @@index([userId, status])
+}
+
+model Payment {
+  id                String          @id @default(uuid())
+  enrollmentId      String
+  enrollment        Enrollment      @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  provider          PaymentProvider
+  status            PaymentStatus   @default(CREATED)
+  amountPaise       Int
+  currency          String          @default("INR")
+  razorpayOrderId   String?         @unique
+  razorpayPaymentId String?         @unique
+  createdAt         DateTime        @default(now())
+  paidAt            DateTime?
+  events            PaymentEvent[]
+
+  @@index([enrollmentId])
+  @@index([status])
+}
+
+model PaymentEvent {
+  id        String   @id @default(uuid())
+  paymentId String
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([paymentId])
+}
+
+model Skill {
+  id             String           @id @default(uuid())
+  name           String           @unique
+  category       String
+  studentSkills  StudentSkill[]
+  verifiedSkills VerifiedSkill[]
+  requirements   JobRequirement[]
+  questions      AssessmentQuestion[]
+}
+
+model StudentSkill {
+  id          String      @id @default(uuid())
+  userId      String
+  skillId     String
+  proficiency Proficiency
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill       Skill       @relation(fields: [skillId], references: [id])
+
+  @@unique([userId, skillId])
+}
+
+model Language {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  studentLanguages StudentLanguage[]
+  jobLanguages     JobLanguage[]
+}
+
+model StudentLanguage {
+  id          String               @id @default(uuid())
+  userId      String
+  languageId  String
+  proficiency LanguageProficiency
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language    Language             @relation(fields: [languageId], references: [id])
+
+  @@unique([userId, languageId])
+}
+
+model Assessment {
+  id         String               @id @default(uuid())
+  slug       String               @unique
+  title      String
+  summary    String
+  appliesTo  CourseCategory[]
+  questions  AssessmentQuestion[]
+  attempts   AssessmentAttempt[]
+  createdAt  DateTime             @default(now())
+}
+
+model AssessmentQuestion {
+  id           String             @id @default(uuid())
+  assessmentId String
+  assessment   Assessment         @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  type         QuestionType
+  prompt       String
+  skillId      String?
+  skill        Skill?             @relation(fields: [skillId], references: [id])
+  points       Int                @default(1)
+  sortOrder    Int
+  options      AssessmentOption[]
+  answers      AssessmentAnswer[]
+
+  @@index([assessmentId, sortOrder])
+}
+
+model AssessmentOption {
+  id         String             @id @default(uuid())
+  questionId String
+  question   AssessmentQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  isCorrect  Boolean            @default(false)
+  sortOrder  Int
+}
+
+model AssessmentAttempt {
+  id           String             @id @default(uuid())
+  userId       String
+  assessmentId String
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment   Assessment         @relation(fields: [assessmentId], references: [id])
+  score        Int
+  maxScore     Int
+  pendingReview Boolean           @default(false)
+  submittedAt  DateTime           @default(now())
+  answers      AssessmentAnswer[]
+
+  @@index([userId, assessmentId])
+}
+
+model AssessmentAnswer {
+  id         String             @id @default(uuid())
+  attemptId  String
+  questionId String
+  attempt    AssessmentAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question   AssessmentQuestion @relation(fields: [questionId], references: [id])
+  response   Json
+  awarded    Int
+  reviewed   Boolean            @default(true)
+
+  @@unique([attemptId, questionId])
+}
+
+model VerifiedSkill {
+  id              String      @id @default(uuid())
+  userId          String
+  skillId         String
+  score           Int
+  level           Proficiency
+  sourceAttemptId String?
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill           Skill       @relation(fields: [skillId], references: [id])
+  updatedAt       DateTime    @updatedAt
+
+  @@unique([userId, skillId])
+}
+
+model Company {
+  id                String            @id @default(uuid())
+  name              String
+  industry          String
+  website           String?
+  location          String
+  hrName            String
+  hrEmail           String
+  hrPhone           String
+  partnershipStatus PartnershipStatus @default(PROSPECT)
+  internalNotes     String?
+  isSample          Boolean           @default(false)
+  jobs              JobDescription[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([partnershipStatus])
+}
+
+model JobDescription {
+  id               String         @id @default(uuid())
+  companyId        String
+  company          Company        @relation(fields: [companyId], references: [id])
+  title            String
+  category         JobCategory
+  description      String
+  responsibilities String
+  qualification    String
+  experience       String
+  salaryText       String
+  salaryMin        Int?
+  salaryMax        Int?
+  location         String
+  employmentType   EmploymentType
+  vacancies        Int
+  applicationDeadline DateTime
+  status           JobStatus      @default(DRAFT)
+  requirements     JobRequirement[]
+  languages        JobLanguage[]
+  eligibility      JobEligibility?
+  applications     Application[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  publishedAt      DateTime?
+
+  @@index([status, category])
+  @@index([applicationDeadline])
+}
+
+model JobRequirement {
+  id                 String         @id @default(uuid())
+  jobId              String
+  skillId            String
+  required           Boolean        @default(true)
+  requiresVerification Boolean      @default(false)
+  job                JobDescription @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill              Skill          @relation(fields: [skillId], references: [id])
+
+  @@unique([jobId, skillId])
+}
+
+model JobLanguage {
+  id             String               @id @default(uuid())
+  jobId          String
+  languageId     String
+  minProficiency LanguageProficiency
+  job            JobDescription       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  language       Language             @relation(fields: [languageId], references: [id])
+
+  @@unique([jobId, languageId])
+}
+
+model JobEligibility {
+  id                  String           @id @default(uuid())
+  jobId               String           @unique
+  job                 JobDescription   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  courseCategories    CourseCategory[]
+  minAssessmentScore  Int?
+  graduationYearMin   Int?
+  graduationYearMax   Int?
+  degreeKeyword       String?
+  locationKeyword     String?
+}
+
+model Application {
+  id            String           @id @default(uuid())
+  userId        String
+  jobId         String
+  status        ApplicationStatus @default(APPLIED)
+  consentToShare Boolean
+  internalNotes String?
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job           JobDescription   @relation(fields: [jobId], references: [id])
+  history       ApplicationStatusHistory[]
+  interviews    Interview[]
+  submission    CandidateSubmission?
+  outcome       HiringOutcome?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([userId, jobId])
+  @@index([status])
+  @@index([jobId, status])
+}
+
+model ApplicationStatusHistory {
+  id            String            @id @default(uuid())
+  applicationId String
+  application   Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  note          String?
+  actorId       String?
+  actor         User?             @relation("StatusActor", fields: [actorId], references: [id])
+  createdAt     DateTime          @default(now())
+
+  @@index([applicationId, createdAt])
+}
+
+model Interview {
+  id            String          @id @default(uuid())
+  applicationId String
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  type          InterviewType
+  interviewerId String?
+  interviewer   User?           @relation("Interviewer", fields: [interviewerId], references: [id])
+  scheduledAt   DateTime
+  meetingLink   String?
+  status        InterviewStatus @default(SCHEDULED)
+  feedback      InterviewFeedback?
+  createdAt     DateTime        @default(now())
+
+  @@index([scheduledAt])
+  @@index([interviewerId])
+}
+
+model InterviewFeedback {
+  id             String    @id @default(uuid())
+  interviewId    String    @unique
+  interview      Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  scores         Json
+  summary        String
+  internalNotes  String?
+  recommendation String?
+  createdAt      DateTime  @default(now())
+}
+
+model ScoringCriterion {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String
+  maxScore    Int
+  active      Boolean @default(true)
+  sortOrder   Int
+}
+
+model CandidateSubmission {
+  id            String      @id @default(uuid())
+  applicationId String      @unique
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  forwardedAt   DateTime    @default(now())
+  forwardedById String
+  forwardedBy   User        @relation("ForwardedBy", fields: [forwardedById], references: [id])
+  note          String?
+}
+
+model HiringOutcome {
+  id            String            @id @default(uuid())
+  applicationId String            @unique
+  application   Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  outcome       HiringOutcomeType
+  notes         String?
+  recordedById  String?
+  recordedBy    User?             @relation("OutcomeRecorder", fields: [recordedById], references: [id])
+  recordedAt    DateTime          @default(now())
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String
+  title       String
+  body        String
+  readAt      DateTime?
+  emailStatus String?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model NotificationPreference {
+  id           String  @id @default(uuid())
+  userId       String  @unique
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailEnabled Boolean @default(true)
+  inAppEnabled Boolean @default(true)
+}
+
+model AdminAuditLog {
+  id        String   @id @default(uuid())
+  actorId   String
+  actor     User     @relation(fields: [actorId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+}
+
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  id         String    @id @default(uuid())
+  userId     String
+  type       String
+  tokenHash  String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, type])
+}
+
+model RateLimitBucket {
+  id     String @id @default(uuid())
+  key    String
+  bucket Int
+  count  Int    @default(0)
+
+  @@unique([key, bucket])
+}

@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-newsreader);
+  --color-navy: #0b1f3a;
+  --color-navy-800: #123056;
+  --color-ink: #15243c;
+  --color-electric: #2f6bff;
+  --color-electric-700: #1d4fd0;
+  --color-mist: #f4f7fb;
+  --color-line: #e3e8f2;
+  --color-muted: #5c6b82;
+  --color-teal: #0f766e;
+  --color-paper: #ffffff;
+  --color-amber: #9a6700;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--color-mist);
+  color: var(--color-ink);
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+h1, h2, h3, .serif { font-family: var(--font-newsreader), Georgia, serif; font-weight: 500; letter-spacing: -0.03em; }
+
+a { color: inherit; }
+
+::selection { background: #d9e4ff; }
+
+.container { width: min(1120px, calc(100% - 2rem)); margin-inline: auto; }
+
+.nav-link { color: rgba(255,255,255,0.78); font-size: 0.92rem; }
+.nav-link:hover { color: white; }
+
+.surface {
+  background: white;
+  border: 1px solid var(--color-line);
+  border-radius: 1.25rem;
+  box-shadow: 0 16px 40px rgba(11, 31, 58, 0.05);
+}
+
+.eyebrow {
+  color: var(--color-electric);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.table-wrap { overflow-x: auto; }
+table.data { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+table.data th { text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); padding: 0.75rem; border-bottom: 1px solid var(--color-line); }
+table.data td { padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--color-line); vertical-align: top; }
+table.data tr:last-child td { border-bottom: 0; }
+
+input, select, textarea {
+  width: 100%;
+  border: 1px solid #d5deeb;
+  background: white;
+  border-radius: 0.8rem;
+  padding: 0.75rem 0.85rem;
+  color: var(--color-ink);
+  outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--color-electric); box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.12); }
+label.field { display: grid; gap: 0.4rem; font-size: 0.88rem; font-weight: 600; color: #24344d; }
+
+.hero-grid {
+  background:
+    radial-gradient(900px 420px at 80% -10%, rgba(47, 107, 255, 0.35), transparent 60%),
+    linear-gradient(180deg, #0b1f3a 0%, #102848 100%);
+}
