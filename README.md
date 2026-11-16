@@ -50,3 +50,20 @@ Leave these unset to use the local fallbacks. Set them in the host environment, 
 | `CLOUDINARY_URL` | Optional `cloudinary://key:secret@cloud` copy. Downloads still use the private file. |
 
 Course prices, eligibility and assessment questions live in the database. Change a price from Admin → Courses.
+
+## Deploy on Vercel
+
+Import [mani-chandra/Upskyla-Hiring](https://github.com/mani-chandra/Upskyla-Hiring) at [vercel.com/new](https://vercel.com/new/import?s=https://github.com/mani-chandra/Upskyla-Hiring).
+
+Vercel Postgres (or Neon) is required for a working production site. Serverless instances cannot share the local embedded database.
+
+In the Vercel project, set:
+
+| Variable | Required |
+| --- | --- |
+| `DATABASE_URL` | Yes. Add a Postgres store, then copy its URL. |
+| `AUTH_SECRET` | Yes. A long random string, at least 16 characters. |
+| `AUTH_URL` | Recommended. Your production URL, for example `https://your-app.vercel.app`. |
+| Razorpay, Resend, MSG91, S3 | Optional. Leave unset until those services are configured. |
+
+The first deploy runs `prisma migrate deploy` and the catalog seed when `DATABASE_URL` is set. Create the first administrator at `/setup` after the site is live.

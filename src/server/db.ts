@@ -42,7 +42,9 @@ async function createPrisma() {
 
   const { PGlite } = await import("@electric-sql/pglite");
   const { PrismaPGlite } = await import("pglite-prisma-adapter");
-  const dataDir = path.join(process.cwd(), "data", "pglite");
+  const dataDir = process.env.VERCEL
+    ? path.join("/tmp", "upskyla-pglite")
+    : path.join(process.cwd(), "data", "pglite");
   await mkdir(dataDir, { recursive: true });
   const client = new PGlite(dataDir);
   await applyPgliteMigrations(client);
