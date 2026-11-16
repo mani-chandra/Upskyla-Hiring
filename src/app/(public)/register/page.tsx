@@ -35,7 +35,7 @@ export default function RegisterPage() {
       <div className="surface w-full max-w-md p-8">
         <p className="eyebrow">Students</p>
         <h1 className="mt-2 text-4xl">Register Now</h1>
-        <p className="mt-2 text-sm leading-6 text-muted">Create your account with your name, email and mobile number. You will confirm both before choosing a course.</p>
+        <p className="mt-2 text-sm leading-6 text-muted">Create your account with your name, email and mobile number. Confirm both, then choose an IT, Non-IT, or combined course. Enrollment opens after payment is verified. Your course decides which vacancies you can apply for.</p>
         <form onSubmit={onSubmit} className="mt-6 grid gap-4">
           <label className="field">Full name<input name="name" required /></label>
           <label className="field">Email<input name="email" type="email" required /></label>

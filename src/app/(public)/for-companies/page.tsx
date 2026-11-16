@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
+import { PageIntro } from "@/components/marketing";
 import { JsonForm } from "@/components/json-form";
 
 export const metadata: Metadata = { title: "For companies" };
 
 export default function ForCompaniesPage() {
   return (
-    <main className="container grid gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr]">
+    <main>
+      <PageIntro
+        eyebrow="For companies"
+        title="Partner with Upskyla."
+        lede="Tell us about a role you are hiring for. An administrator creates the company profile, publishes the vacancy, and screens enrolled students against the rules you set. Your team keeps the final interview and the hiring decision. There is no employer login to manage."
+      />
+      <div className="container grid gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr]">
       <div>
-        <p className="eyebrow">For companies</p>
-        <h1 className="mt-3 text-5xl">Partner with Upskyla.</h1>
-        <p className="mt-4 text-sm leading-7 text-muted">Tell us about a role you are hiring for. An Upskyla administrator will create the company profile and publish the vacancy. Your team keeps the final interview and the hiring decision. There is no employer login to manage.</p>
+        <h2 className="text-3xl">What you send, and what you still decide.</h2>
+        <p className="mt-4 text-sm leading-7 text-muted">A useful brief names the work, the location, the salary range, how many people you need, and the deadline. Add the degree, graduation year, skills, languages or minimum assessment score if those should block an application before anyone is forwarded.</p>
         <ul className="mt-6 grid gap-3 text-sm leading-6 text-muted">
-          <li>Share the job description, location, salary and deadline.</li>
-          <li>Upskyla screens enrolled students against those requirements.</li>
-          <li>Only consenting shortlisted candidates are forwarded.</li>
+          <li>Share the job description, location, salary, openings and deadline.</li>
+          <li>Upskyla screens enrolled students against those requirements and runs a mock interview.</li>
+          <li>Only consenting shortlisted candidates are forwarded. Internal screening notes stay with Upskyla.</li>
+          <li>You interview the shortlist and report Selected, Rejected, Joined, or Declined as separate outcomes.</li>
         </ul>
       </div>
       <div className="surface p-6">
@@ -30,6 +37,7 @@ export default function ForCompaniesPage() {
             <label className="field">What are you hiring for?<textarea name="note" rows={4} required /></label>
           </JsonForm>
         </div>
+      </div>
       </div>
     </main>
   );

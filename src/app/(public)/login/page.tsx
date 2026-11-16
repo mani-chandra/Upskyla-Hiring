@@ -65,7 +65,7 @@ export default function LoginPage() {
       <div className="surface w-full max-w-md p-8">
         <p className="eyebrow">Student and admin</p>
         <h1 className="mt-2 text-4xl">Login</h1>
-        <p className="mt-2 text-sm text-muted">Students need a verified email and phone. Administrators use the account created during setup.</p>
+        <p className="mt-2 text-sm leading-6 text-muted">Students sign in after email and phone are confirmed, then continue course, assessments and applications. Administrators use the account created during first-time setup. There is no employer login.</p>
         <div className="mt-6"><Suspense><LoginForm /></Suspense></div>
         <div className="mt-4 flex justify-between text-sm">
           <Link href="/forgot-password" className="text-electric">Forgot password</Link>

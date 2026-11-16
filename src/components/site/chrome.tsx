@@ -76,7 +76,7 @@ export function SiteFooter() {
       <div className="container grid gap-10 py-14 md:grid-cols-4">
         <div className="md:col-span-2">
           <Logo light />
-          <p className="mt-4 max-w-md text-sm leading-6 text-white/70">{brand.tagline} Upskyla trains graduates and introduces eligible candidates to companies that are hiring. Employment is not guaranteed.</p>
+          <p className="mt-4 max-w-md text-sm leading-6 text-white/70">{brand.tagline} Upskyla trains graduates on an IT, Non-IT, or combined track, scores their skills separately from what they report, and introduces eligible, consenting candidates to companies that have shared a vacancy. Employment is not guaranteed.</p>
         </div>
         <div>
           <p className="text-xs font-semibold tracking-[0.14em] text-white/50">NAVIGATION</p>
