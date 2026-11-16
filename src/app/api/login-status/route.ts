@@ -5,6 +5,12 @@ import { getPrisma } from "@/server/db";
 import { rateLimit } from "@/server/rate-limit";
 
 export const POST = api(async (req) => {
+  if (process.env.VERCEL && !process.env.DATABASE_URL?.trim()) {
+    return ok({
+      state: "invalid",
+      error: "This hosted app needs Postgres. Add DATABASE_URL in Vercel, then redeploy.",
+    }, 503);
+  }
   const body = await readJson<{ email?: string; password?: string }>(req);
   const email = String(body.email ?? "").trim().toLowerCase();
   const password = String(body.password ?? "");

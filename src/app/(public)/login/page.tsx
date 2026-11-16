@@ -1,15 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui";
 
+function loginErrorMessage(code: string | null) {
+  if (code === "Configuration") {
+    return "Sign-in is not configured on this host. Set AUTH_SECRET in Vercel, then redeploy.";
+  }
+  if (code === "CredentialsSignin") {
+    return "Email or password is incorrect.";
+  }
+  return "";
+}
+
 function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
-  const [error, setError] = useState("");
+  const [error, setError] = useState(loginErrorMessage(params.get("error")));
   const [pending, setPending] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -26,11 +35,11 @@ function LoginForm() {
     });
     const status = (await check.json()) as { state?: string; userId?: string; error?: string; role?: string };
     if (status.state === "verify_email" && status.userId) {
-      router.push(`/verify-email?userId=${status.userId}`);
+      window.location.assign(`/verify-email?userId=${status.userId}`);
       return;
     }
     if (status.state === "verify_phone" && status.userId) {
-      router.push(`/verify-phone?userId=${status.userId}`);
+      window.location.assign(`/verify-phone?userId=${status.userId}`);
       return;
     }
     if (!check.ok || status.state !== "ok") {
@@ -39,14 +48,13 @@ function LoginForm() {
       return;
     }
     const result = await signIn("credentials", { email, password, redirect: false });
-    setPending(false);
     if (result?.error) {
-      setError("Email or password is incorrect.");
+      setPending(false);
+      setError(loginErrorMessage(result.error) || "Email or password is incorrect.");
       return;
     }
     const next = params.get("next");
-    router.push(next || (status.role === "ADMIN" ? "/admin" : "/student"));
-    router.refresh();
+    window.location.assign(next || (status.role === "ADMIN" ? "/admin" : "/student"));
   }
 
   return (
