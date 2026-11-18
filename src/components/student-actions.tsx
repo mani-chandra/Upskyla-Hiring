@@ -52,8 +52,7 @@ export function PayButton({ courseId }: { courseId: string }) {
         setError(result.error ?? "Could not confirm the demonstration payment.");
         return;
       }
-      router.push("/student/profile");
-      router.refresh();
+      window.location.assign("/student/profile#personal");
       return;
     }
     await new Promise<void>((resolve, reject) => {
@@ -89,8 +88,7 @@ export function PayButton({ courseId }: { courseId: string }) {
           setError("The payment signature could not be verified.");
           return;
         }
-        router.push("/student/profile");
-        router.refresh();
+        window.location.assign("/student/profile#personal");
       },
     });
     checkout.open();
@@ -166,8 +164,7 @@ export function AssessmentForm({
       setError(data.error ?? "Could not submit.");
       return;
     }
-    router.push("/student/assessments");
-    router.refresh();
+    window.location.assign("/student/profile#assessments");
   }
 
   return (

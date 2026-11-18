@@ -41,7 +41,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
         <div className="hidden items-center gap-2 lg:flex">
           {signedIn ? (
             <>
-              <Button asChild variant="ghost" size="sm"><Link href="/student">Dashboard</Link></Button>
+              <Button asChild size="sm"><Link href="/student">Dashboard</Link></Button>
               <Button variant="outline" size="sm" className="border-white/20 bg-transparent text-white" onClick={() => signOut({ callbackUrl: "/" })}>Sign out</Button>
             </>
           ) : (

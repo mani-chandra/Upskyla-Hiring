@@ -74,36 +74,62 @@ export function activeEnrollment(student: StudentBundle) {
   return student.enrollments.find((item) => item.status === "ACTIVE") ?? null;
 }
 
-export function profileChecks(student: StudentBundle) {
+export type OnboardingStep = {
+  id: string;
+  label: string;
+  done: boolean;
+  href: string;
+};
+
+/** Ordered checklist students must finish after course purchase before jobs unlock. */
+export function onboardingSteps(student: StudentBundle): OnboardingStep[] {
   const profile = student.profile;
   const education = student.education;
+  const enrollment = activeEnrollment(student);
+  const course = enrollment?.course.category;
+  const steps: OnboardingStep[] = [
+    { id: "course", label: "Choose and pay for a course", done: Boolean(enrollment), href: "/student/profile#course" },
+    { id: "personal", label: "Date of birth, address and location", done: Boolean(profile?.dateOfBirth && profile.address && profile.currentLocation), href: "/student/profile#personal" },
+    { id: "photo", label: "Photograph", done: Boolean(profile?.photoFileId), href: "/student/profile#photo" },
+    { id: "education", label: "Education", done: Boolean(education?.college && education.degree && education.branch && education.graduationYear), href: "/student/profile#education" },
+    { id: "resume", label: "Resume", done: student.resumes.length > 0, href: "/student/profile#resume" },
+  ];
+  if (course === CourseCategory.IT || course === CourseCategory.COMBINED) {
+    steps.push({ id: "technical", label: "Technical self-assessment", done: student.skills.length > 0, href: "/student/profile#skills" });
+  }
+  steps.push({
+    id: "workplace",
+    label: "Languages and workplace skills",
+    done: Boolean(
+      student.languages.length > 0 &&
+        profile?.communicationSkill &&
+        profile.teamworkSkill &&
+        profile.problemSolvingSkill &&
+        profile.customerHandlingSkill,
+    ),
+    href: "/student/profile#skills",
+  });
+  return steps;
+}
+
+export function nextOnboardingStep(student: StudentBundle) {
+  return onboardingSteps(student).find((step) => !step.done) ?? null;
+}
+
+export function profileChecks(student: StudentBundle) {
+  const steps = onboardingSteps(student);
   const checks = [
     { label: "Name, email and phone", done: Boolean(student.name && student.email && student.phone) },
     { label: "Email verified", done: Boolean(student.emailVerified) },
     { label: "Phone verified", done: Boolean(student.phoneVerified) },
-    { label: "Active course", done: Boolean(activeEnrollment(student)) },
-    { label: "Date of birth", done: Boolean(profile?.dateOfBirth) },
-    { label: "Address and location", done: Boolean(profile?.address && profile.currentLocation) },
-    { label: "Photograph", done: Boolean(profile?.photoFileId) },
-    { label: "Education", done: Boolean(education?.college && education.degree && education.branch && education.graduationYear) },
-    { label: "Resume", done: student.resumes.length > 0 },
-    {
-      label: "Languages and workplace skills",
-      done: Boolean(
-        student.languages.length > 0 &&
-          profile?.communicationSkill &&
-          profile.teamworkSkill &&
-          profile.problemSolvingSkill &&
-          profile.customerHandlingSkill,
-      ),
-    },
+    ...steps.map((step) => ({ label: step.label, done: step.done })),
   ];
-  const course = activeEnrollment(student)?.course.category;
-  if (course === CourseCategory.IT || course === CourseCategory.COMBINED) {
-    checks.push({ label: "Technical self-assessment", done: student.skills.length > 0 });
-  }
   const done = checks.filter((item) => item.done).length;
   return { checks, percent: Math.round((done / checks.length) * 100) };
+}
+
+export function dashboardUnlocked(student: StudentBundle) {
+  return Boolean(activeEnrollment(student)) && profileReady(student);
 }
 
 export function profileReady(student: StudentBundle) {

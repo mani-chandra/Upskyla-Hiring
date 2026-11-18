@@ -1,15 +1,16 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ApplyButton } from "@/components/student-actions";
 import { Badge } from "@/components/ui";
 import { formatDate, titleCase } from "@/lib/format";
 import { currentStudent } from "@/server/current";
 import { courseCanSeeCategory, eligibilityIssues, personFromStudent } from "@/server/eligibility";
-import { activeEnrollment } from "@/server/profile";
+import { activeEnrollment, dashboardUnlocked } from "@/server/profile";
 import { getPrisma } from "@/server/db";
 
 export default async function StudentJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const student = await currentStudent();
+  if (!dashboardUnlocked(student)) redirect("/student/profile");
   const enrollment = activeEnrollment(student);
   const prisma = await getPrisma();
   const job = await prisma.jobDescription.findFirst({

@@ -3,9 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu } from "lucide-react";
+import { Lock, Menu } from "lucide-react";
 import { SignOutButton } from "@/components/site/chrome";
 import { cn } from "@/lib/utils";
+
+export type NavItem = {
+  href: string;
+  label: string;
+  locked?: boolean;
+  lockHint?: string;
+};
 
 export function AppShell({
   title,
@@ -15,7 +22,7 @@ export function AppShell({
 }: {
   title: string;
   name: string;
-  items: { href: string; label: string }[];
+  items: NavItem[];
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -24,6 +31,20 @@ export function AppShell({
     <nav className="grid gap-1">
       {items.map((item) => {
         const active = pathname === item.href || (item.href !== "/student" && item.href !== "/admin" && pathname.startsWith(item.href));
+        if (item.locked) {
+          return (
+            <Link
+              key={item.href}
+              href={item.lockHint ? `/student/profile?next=${encodeURIComponent(item.href)}` : "/student/profile"}
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm text-white/40"
+              title={item.lockHint ?? "Finish your profile first"}
+            >
+              <span>{item.label}</span>
+              <Lock size={14} />
+            </Link>
+          );
+        }
         return (
           <Link
             key={item.href}
@@ -38,12 +59,13 @@ export function AppShell({
     </nav>
   );
   return (
-    <div className="min-h-screen bg-mist lg:grid lg:grid-cols-[260px_1fr]">
+    <div className="min-h-screen bg-mist lg:grid lg:grid-cols-[240px_1fr]">
       <aside className="hidden bg-navy text-white lg:flex lg:flex-col lg:px-4 lg:py-6">
         <p className="px-3 text-xs font-semibold tracking-[0.18em] text-white/50">{title}</p>
         <p className="mt-2 px-3 text-lg serif text-white">{name}</p>
         <div className="mt-6 flex-1">{nav}</div>
-        <SignOutButton className="mx-3 mt-4 text-left text-sm text-white/70" />
+        <Link href="/" className="mx-3 mt-2 text-sm text-white/60 hover:text-white">Back to website</Link>
+        <SignOutButton className="mx-3 mt-3 text-left text-sm text-white/70" />
       </aside>
       <div>
         <div className="flex items-center justify-between border-b border-line bg-white px-4 py-3 lg:hidden">
@@ -56,6 +78,7 @@ export function AppShell({
             <div className="h-full w-72 bg-navy p-4 text-white" onClick={(event) => event.stopPropagation()}>
               <p className="px-3 serif text-2xl">{name}</p>
               <div className="mt-4">{nav}</div>
+              <Link href="/" className="mt-4 block px-3 text-sm text-white/60" onClick={() => setOpen(false)}>Back to website</Link>
             </div>
           </div>
         ) : null}

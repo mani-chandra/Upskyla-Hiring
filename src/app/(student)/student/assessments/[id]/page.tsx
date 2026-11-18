@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssessmentForm } from "@/components/student-actions";
 import { currentStudent } from "@/server/current";
@@ -8,15 +9,17 @@ export default async function AssessmentDetail({ params }: { params: Promise<{ i
   const { id } = await params;
   const student = await currentStudent();
   const enrollment = activeEnrollment(student);
+  if (!enrollment) notFound();
   const prisma = await getPrisma();
   const assessment = await prisma.assessment.findUnique({
     where: { id },
     include: { questions: { orderBy: { sortOrder: "asc" }, include: { options: { orderBy: { sortOrder: "asc" }, select: { id: true, text: true } } } } },
   });
-  if (!assessment || !enrollment || !assessment.appliesTo.includes(enrollment.course.category)) notFound();
+  if (!assessment || !assessment.appliesTo.includes(enrollment.course.category)) notFound();
   return (
     <div>
-      <h1 className="text-4xl">{assessment.title}</h1>
+      <Link href="/student/profile#assessments" className="text-sm font-semibold text-electric">Back to Profile</Link>
+      <h1 className="mt-3 text-4xl">{assessment.title}</h1>
       <p className="mt-2 mb-6 text-sm text-muted">{assessment.summary}</p>
       <AssessmentForm assessmentId={assessment.id} questions={assessment.questions} />
     </div>
