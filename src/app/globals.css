@@ -249,6 +249,97 @@ label.field { display: grid; gap: 0.4rem; font-size: 0.88rem; font-weight: 600; 
 }
 .float-y { animation: floaty 5.5s ease-in-out infinite; }
 
+
+.public-shell {
+  position: relative;
+  isolation: isolate;
+  --scroll-tone: 0%;
+  --scroll-y: 0px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, #f4f7fb 100%, #dbe7ff var(--scroll-tone)) 0%,
+      color-mix(in srgb, #eef3fa 100%, #cfe0ff var(--scroll-tone)) 48%,
+      color-mix(in srgb, #f4f7fb 100%, #d5ebe7 var(--scroll-tone)) 100%
+    );
+}
+.atmosphere {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+}
+.atmosphere-scroll {
+  position: absolute;
+  inset: -25%;
+  background:
+    radial-gradient(42% 34% at 18% 22%, rgba(47, 107, 255, 0.14), transparent 70%),
+    radial-gradient(38% 30% at 82% 68%, rgba(15, 118, 110, 0.12), transparent 72%),
+    radial-gradient(30% 24% at 70% 18%, rgba(142, 176, 255, 0.1), transparent 70%);
+  transform: translate3d(0, calc(var(--scroll-y) * -0.04), 0);
+  opacity: 0.85;
+  transition: opacity 280ms ease;
+}
+.atmosphere-spot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 520px;
+  height: 520px;
+  margin: -260px 0 0 -260px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(47, 107, 255, 0.16) 0%, rgba(47, 107, 255, 0.05) 34%, transparent 68%);
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 220ms ease;
+  mix-blend-mode: multiply;
+}
+.atmosphere-dot,
+.atmosphere-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  will-change: transform, opacity, width, height;
+  transition: opacity 180ms ease, width 180ms ease, height 180ms ease, margin 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+.atmosphere-dot {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 999px;
+  background: #2f6bff;
+}
+.atmosphere-ring {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(47, 107, 255, 0.55);
+  background: rgba(47, 107, 255, 0.05);
+}
+html.cursor-effects-on,
+html.cursor-effects-on body,
+html.cursor-effects-on a,
+html.cursor-effects-on button,
+html.cursor-effects-on summary {
+  cursor: none;
+}
+html.cursor-interactive .atmosphere-dot {
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background: #0f766e;
+}
+html.cursor-interactive .atmosphere-ring {
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border-color: rgba(15, 118, 110, 0.55);
+  background: rgba(15, 118, 110, 0.06);
+}
+
 @keyframes rise {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
@@ -275,4 +366,15 @@ label.field { display: grid; gap: 0.4rem; font-size: 0.88rem; font-weight: 600; 
   .meter > span { width: var(--w, 70%); }
   .card-hover:hover, .media-frame:hover img { transform: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
+  .atmosphere { display: none; }
+  html.cursor-effects-on,
+  html.cursor-effects-on body,
+  html.cursor-effects-on a,
+  html.cursor-effects-on button,
+  html.cursor-effects-on summary {
+    cursor: auto;
+  }
+}
+@media (pointer: coarse) {
+  .atmosphere { display: none; }
 }
