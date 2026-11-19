@@ -12,8 +12,8 @@ const links = [
   ["/about", "About"],
   ["/how-it-works", "How It Works"],
   ["/courses", "Courses"],
-  ["/careers", "Career Opportunities"],
   ["/for-companies", "For Companies"],
+  ["/contact", "Contact Us"],
 ];
 
 export function Logo({ light = false }: { light?: boolean }) {

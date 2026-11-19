@@ -48,6 +48,8 @@ Leave these unset to use the local fallbacks. Set them in the host environment, 
 | `MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID`, `MSG91_SENDER_ID` | Sends the phone OTP. The template should accept a variable named `OTP`. |
 | `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Private object storage. Optional `S3_REGION` and `S3_ENDPOINT`. |
 | `CLOUDINARY_URL` | Optional `cloudinary://key:secret@cloud` copy. Downloads still use the private file. |
+| `OPENAI_API_KEY` | Powers the public Upskyla Assistant with live LLM answers. Without it, the assistant still answers from the built-in Upskyla knowledge base. |
+| `OPENAI_MODEL` | Optional model id. Defaults to `gpt-4o-mini`. |
 
 Course prices, eligibility and assessment questions live in the database. Change a price from Admin → Courses.
 
@@ -64,6 +66,6 @@ In the Vercel project, set:
 | `DATABASE_URL` | Yes. Add a Postgres store, then copy its URL. |
 | `AUTH_SECRET` | Yes. A long random string, at least 16 characters. |
 | `AUTH_URL` | Recommended. Your production URL, for example `https://your-app.vercel.app`. |
-| Razorpay, Resend, MSG91, S3 | Optional. Leave unset until those services are configured. |
+| Razorpay, Resend, MSG91, S3, `OPENAI_API_KEY` | Optional. Leave unset until those services are configured. |
 
 The first deploy runs `prisma migrate deploy` and the catalog seed when `DATABASE_URL` is set. Create the first administrator at `/setup` after the site is live.
